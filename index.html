@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Star Wars Explorer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center">
+    <nav class="w-full bg-gray-800 shadow-lg p-3 flex justify-between items-center">
+        <a href="#" class="text-2xl font-bold text-yellow-400">Star Wars</a>
+        <div class="space-x-4">
+            <button onclick="showSection('characters')" class="text-gray-400 hover:text-yellow-400">Personajes</button>
+            <button onclick="showSection('planets')" class="text-gray-400 hover:text-yellow-400">Planetas</button>
+            <button onclick="showSection('vehicles')" class="text-gray-400 hover:text-yellow-400">Vehículos</button>
+            <button onclick="showSection('films')" class="text-gray-400 hover:text-yellow-400">Películas</button>
+        </div>
+    </nav>
+
+    <header class="text-center my-10">
+        <h1 class="text-5xl font-extrabold text-yellow-400 mb-6">Explora el Universo Star Wars</h1>
+        <p class="text-lg text-gray-300 max-w-2xl mx-auto">Descubre personajes, planetas y vehículos icónicos de Star Wars.</p>
+    </header>
+
+    <div id="characters-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-6 max-w-6xl"></div>
+    <div id="planets-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-6 max-w-6xl"></div>
+    <div id="vehicles-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-6 max-w-6xl"></div>
+    <div id="films-container" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 p-6 max-w-6xl"></div>
+
+    <footer class="w-full bg-gray-800 p-3 mt-auto text-center text-gray-300">
+        <p>Hecho con <span class="text-red-500">SWAPI</span> por un fan de Star Wars.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
