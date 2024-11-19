@@ -1,3 +1,4 @@
+// Endpoints de la API para diferentes categorías
 const apiEndpoints = {
     characters: "https://swapi.dev/api/people/",
     planets: "https://swapi.dev/api/planets/",
@@ -5,6 +6,7 @@ const apiEndpoints = {
     films: "https://swapi.dev/api/films/",
 };
 
+// Caché para almacenar datos descargados de cada categoría
 const dataCache = {
     characters: [],
     planets: [],
@@ -12,9 +14,10 @@ const dataCache = {
     films: [],
 };
 
-const resolvedCache = {}; // Cache para almacenar datos resueltos desde URLs
+// Caché para almacenar datos resueltos desde URLs relacionadas
+const resolvedCache = {};
 
-// Sección de contenedores
+// Contenedores del DOM donde se mostrarán los datos de cada sección
 const sections = {
     characters: document.getElementById("characters-container"),
     planets: document.getElementById("planets-container"),
@@ -22,62 +25,77 @@ const sections = {
     films: document.getElementById("films-container"),
 };
 
+// Campo de búsqueda en el DOM
 const searchInput = document.getElementById("search");
 
-// Mostrar una sección y configurar búsqueda
+// Mostrar una sección específica y configurar la búsqueda
 function showSection(section) {
+    // Ocultar todas las secciones y mostrar solo la seleccionada
     Object.values(sections).forEach((container) =>
         container.classList.add("hidden")
     );
     document.getElementById("search-container").classList.remove("hidden");
     sections[section].classList.remove("hidden");
 
+    // Limpiar el campo de búsqueda y configurar el evento de entrada
     searchInput.value = "";
     searchInput.oninput = () => filterList(section, searchInput.value);
 
+    // Si no hay datos en la caché, descargar datos desde la API
     if (dataCache[section].length === 0) {
         fetchAndDisplay(section);
     } else {
+        // Si ya hay datos, renderizarlos directamente
         renderList(section, dataCache[section]);
     }
 }
 
-// Filtrar la lista
+// Filtrar los elementos de la lista según la consulta del usuario
 function filterList(section, query) {
+    // Filtrar datos según el nombre o título y hacerlos insensibles a mayúsculas
     const filteredItems = dataCache[section].filter((item) =>
         (item.name || item.title).toLowerCase().includes(query.toLowerCase())
     );
+    // Renderizar la lista filtrada
     renderList(section, filteredItems);
 }
 
-// Obtener datos desde la API
+// Descargar datos de la API y mostrarlos
 async function fetchAndDisplay(section) {
     try {
+        // Realizar la solicitud a la API
         const response = await fetch(apiEndpoints[section]);
         const data = await response.json();
+        // Guardar los datos descargados en la caché
         dataCache[section] = data.results;
+        // Renderizar los datos descargados
         renderList(section, data.results);
     } catch (error) {
         console.error(`Error fetching ${section}:`, error);
     }
 }
 
-// Extraer ID del objeto desde su URL
+// Extraer el ID de un objeto desde su URL (útil para imágenes y detalles)
 function extractIdFromUrl(url) {
     const match = url.match(/\/([0-9]*)\/$/);
     return match ? match[1] : null;
 }
 
-// Renderizar la lista de elementos
+// Renderizar la lista de elementos en el contenedor correspondiente
 function renderList(section, items) {
+    // Obtener el contenedor de la sección actual
     const container = sections[section];
     container.innerHTML = "";
 
+    // Ordenar los elementos alfabéticamente por nombre o título
     items.sort((a, b) => (a.name || a.title).localeCompare(b.name || b.title));
-    items.forEach((item) => {
-        const itemName = item.name || item.title;
-        const itemId = extractIdFromUrl(item.url);
 
+    // Crear y agregar tarjetas para cada elemento
+    items.forEach((item) => {
+        const itemName = item.name || item.title; // Obtener el nombre o título
+        const itemId = extractIdFromUrl(item.url); // Obtener el ID desde la URL
+
+        // Crear la tarjeta del elemento
         const card = document.createElement("div");
         card.className =
             "bg-gray-800 rounded-lg shadow-md p-4 text-center hover:bg-gray-700 cursor-pointer";
@@ -88,19 +106,23 @@ function renderList(section, items) {
              class="rounded-lg mb-4 w-full h-48 object-cover" />
         <h3 class="text-lg font-bold">${itemName}</h3>
       `;
+
+        // Agregar evento de clic para mostrar detalles
         card.addEventListener("click", () => displayDetails(section, item));
         container.appendChild(card);
     });
 }
 
-// Resolver URLs relacionadas
+// Resolver URLs relacionadas para obtener nombres o títulos legibles
 async function resolveUrls(urls) {
     const promises = urls.map(async (url) => {
+        // Si ya está resuelto en la caché, devolverlo
         if (resolvedCache[url]) {
             return resolvedCache[url];
         }
 
         try {
+            // Descargar y guardar datos resueltos en la caché
             const response = await fetch(url);
             const data = await response.json();
             resolvedCache[url] = data.name || data.title;
@@ -111,13 +133,14 @@ async function resolveUrls(urls) {
         }
     });
 
-    return Promise.all(promises);
+    return Promise.all(promises); // Esperar a que todas las URLs sean resueltas
 }
 
-// Mostrar detalles en un modal
+// Mostrar los detalles de un elemento seleccionado en un modal
 async function displayDetails(section, item) {
     const itemId = extractIdFromUrl(item.url);
 
+    // Crear el modal para mostrar los detalles
     const detailsModal = document.createElement("div");
     detailsModal.className =
         "fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50 p-6";
@@ -135,6 +158,7 @@ async function displayDetails(section, item) {
     `;
     document.body.appendChild(detailsModal);
 
+    // Obtener elementos del modal
     const detailsList = document.getElementById("details-list");
     const loadingIndicator = document.getElementById("details-loading");
     const relatedFields = [
@@ -145,6 +169,7 @@ async function displayDetails(section, item) {
         "species",
     ];
 
+    // Procesar y mostrar campos relacionados
     for (const field of relatedFields) {
         if (item[field]?.length) {
             const names = await resolveUrls(item[field]);
@@ -154,6 +179,7 @@ async function displayDetails(section, item) {
         }
     }
 
+    // Mostrar otros campos relevantes del elemento
     Object.entries(item).forEach(([key, value]) => {
         if (!relatedFields.includes(key) && typeof value !== "object") {
             const listItem = document.createElement("li");
@@ -162,14 +188,15 @@ async function displayDetails(section, item) {
         }
     });
 
+    // Finalizar carga y mostrar lista de detalles
     detailsList.classList.remove("hidden");
     loadingIndicator.classList.add("hidden");
 }
 
-// Cerrar el modal
+// Cerrar el modal de detalles
 function closeDetails() {
     document.querySelector(".fixed.inset-0").remove();
 }
 
-// Inicializar mostrando personajes
+// Mostrar la sección inicial al cargar la página
 showSection("characters");
